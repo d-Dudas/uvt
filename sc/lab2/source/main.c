@@ -5,6 +5,7 @@
 #define READ_MODE "r"
 #define WRITE_MODE "w"
 
+#define HELP_PRINTED 1
 #define SUCCESS 0
 #define EXPECTED_ARGUMENT_NOT_FOUND -1
 #define UNKNOWN_ARGUMENT -2
@@ -49,6 +50,11 @@ int isDecryptyFileFlag(const char *flag)
 int isOutputFileFlag(const char *flag)
 {
     return strcmp(flag, "-o") == 0;
+}
+
+int isHelpFlag(const char *flag)
+{
+    return strcmp(flag, "-h") == 0 || strcmp(flag, "--help") == 0;
 }
 
 void clearConfigInputFile()
@@ -98,6 +104,19 @@ int configureOutputFile(const char *filename)
     return SUCCESS;
 }
 
+void printHelpMessage(const char *appName)
+{
+    printf("%s usage:\n", appName);
+    printf("%s <flag> <filename> <flag> <filename>\n", appName);
+    printf("\n");
+    printf("Flags:\n");
+    printf("-e <filename>\t\t Encrypt file\n");
+    printf("-d <filename>\t\t Decrypt file\n");
+    printf("-o <filename>\t\t Output file\n");
+    printf("\n");
+    printf("\nAn output file should be specified.\n");
+}
+
 int readFlags(int argc, char **args)
 {
     int ret;
@@ -138,6 +157,11 @@ int readFlags(int argc, char **args)
             {
                 return EXPECTED_ARGUMENT_NOT_FOUND;
             }
+        }
+        else if (isHelpFlag(args[i]))
+        {
+            printHelpMessage(args[0]);
+            return HELP_PRINTED;
         }
         else
         {
@@ -218,7 +242,13 @@ int main(int argc, char **args)
 
     ret = readFlags(argc, args);
     if (ret != SUCCESS)
+    {
+        if (ret == HELP_PRINTED)
+        {
+            return SUCCESS;
+        }
         goto error;
+    }
 
     char *inputData = readInputFile();
     if (inputData == NULL)
