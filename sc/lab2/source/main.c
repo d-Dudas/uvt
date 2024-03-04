@@ -9,6 +9,14 @@
 #define EXPECTED_ARGUMENT_NOT_FOUND -1
 #define UNKNOWN_ARGUMENT -2
 #define ERROR_OPENING_FILE -3
+#define ERROR_READING_FILE -4
+#define UNKNOWN_MODE -5
+
+#define VERIFY_RETURN_VALUE(value) \
+    if (value != SUCCESS)          \
+    {                              \
+        return value;              \
+    }
 
 typedef enum mode
 {
@@ -28,17 +36,17 @@ typedef struct config
 
 config globalConfig;
 
-int isEncryptFileFlag(char *flag)
+int isEncryptFileFlag(const char *flag)
 {
     return strcmp(flag, "-e") == 0;
 }
 
-int isDecryptyFileFlag(char *flag)
+int isDecryptyFileFlag(const char *flag)
 {
     return strcmp(flag, "-d") == 0;
 }
 
-int isOutputFileFlag(char *flag)
+int isOutputFileFlag(const char *flag)
 {
     return strcmp(flag, "-o") == 0;
 }
@@ -61,26 +69,46 @@ void clearConfigOutputFile()
     }
 }
 
+int configureInputFile(const char *filename, const mode mode)
+{
+    FILE *file = fopen(filename, READ_MODE);
+    if (file == NULL)
+    {
+        return ERROR_OPENING_FILE;
+    }
+
+    clearConfigInputFile();
+    globalConfig.inputFile = file;
+    globalConfig.mode = mode;
+
+    return SUCCESS;
+}
+
+int configureOutputFile(const char *filename)
+{
+    FILE *file = fopen(filename, WRITE_MODE);
+    if (file == NULL)
+    {
+        return ERROR_OPENING_FILE;
+    }
+
+    clearConfigOutputFile();
+    globalConfig.outputFile = file;
+
+    return SUCCESS;
+}
+
 int readFlags(int argc, char **args)
 {
+    int ret;
     for (int i = 1; i < argc; i++)
     {
         if (isEncryptFileFlag(args[i]))
         {
             if (++i < argc)
             {
-                FILE *file = fopen(args[i], "r");
-
-                if (file != NULL)
-                {
-                    clearConfigInputFile();
-                    globalConfig.inputFile = file;
-                    globalConfig.mode = encrypt;
-                }
-                else
-                {
-                    return ERROR_OPENING_FILE;
-                }
+                ret = configureInputFile(args[i], encrypt);
+                VERIFY_RETURN_VALUE(ret);
             }
             else
             {
@@ -91,18 +119,8 @@ int readFlags(int argc, char **args)
         {
             if (++i < argc)
             {
-                FILE *file = fopen(args[i], "r");
-
-                if (file != NULL)
-                {
-                    clearConfigInputFile();
-                    globalConfig.inputFile = file;
-                    globalConfig.mode = decrypt;
-                }
-                else
-                {
-                    return ERROR_OPENING_FILE;
-                }
+                ret = configureInputFile(args[i], decrypt);
+                VERIFY_RETURN_VALUE(ret);
             }
             else
             {
@@ -113,17 +131,8 @@ int readFlags(int argc, char **args)
         {
             if (++i < argc)
             {
-                FILE *file = fopen(args[i], "w");
-
-                if (file != NULL)
-                {
-                    clearConfigOutputFile();
-                    globalConfig.outputFile = file;
-                }
-                else
-                {
-                    return ERROR_OPENING_FILE;
-                }
+                ret = configureOutputFile(args[i]);
+                VERIFY_RETURN_VALUE(ret);
             }
             else
             {
@@ -165,14 +174,14 @@ char *readInputFile()
     return buffer;
 }
 
-int writeToOutputFile(char *output)
+int writeToOutputFile(const char *output)
 {
-    fputs(output, globalConfig.outputFile);
+    fwrite(output, sizeof(char), globalConfig.inputFileSize, globalConfig.outputFile);
 
     return SUCCESS;
 }
 
-int encryptData(char *inputData)
+int encryptData(const char *inputData)
 {
     char *auxData = (char *)malloc(globalConfig.inputFileSize);
     strcpy(auxData, inputData);
@@ -187,7 +196,7 @@ int encryptData(char *inputData)
     return SUCCESS;
 }
 
-int decryptData(char* inputData)
+int decryptData(const char *inputData)
 {
     char *auxData = (char *)malloc(globalConfig.inputFileSize);
     strcpy(auxData, inputData);
@@ -196,8 +205,6 @@ int decryptData(char* inputData)
     {
         auxData[i] = (auxData[i] - globalConfig.cipher) % 255;
     }
-
-    printf("%s\n", auxData);
 
     writeToOutputFile(auxData);
 
@@ -210,30 +217,38 @@ int main(int argc, char **args)
     globalConfig.cipher = 5;
 
     ret = readFlags(argc, args);
-    if (ret != 0)
+    if (ret != SUCCESS)
         goto error;
 
     char *inputData = readInputFile();
     if (inputData == NULL)
+    {
+        ret = ERROR_READING_FILE;
         goto error;
-
-    encryptData(inputData);
+    }
 
     switch (globalConfig.mode)
     {
     case encrypt:
-        encryptData(inputData);
+        ret = encryptData(inputData);
+        if (ret != SUCCESS)
+            goto error;
         break;
     case decrypt:
-        decryptData(inputData);
-    
+        ret = decryptData(inputData);
+        if (ret != SUCCESS)
+            goto error;
+
     default:
+        ret = UNKNOWN_MODE;
+        goto error;
         break;
     }
 
     return SUCCESS;
 error:
-    printf("Something went wrong\nError code: %d\n", ret);
+    printf("Something went wrong.\n");
+    printf("Error code: %d\n", ret);
 
     clearConfigInputFile();
     clearConfigOutputFile();
