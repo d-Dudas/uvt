@@ -16,6 +16,10 @@ def CroutLUdecomp(a):
             sum_u = sum(a[i, k] * a[k, j] for k in range(i))
             a[i, j] = (a[i, j] - sum_u) / a[i][i]
 
+    for i in range(n):
+        for j in range(i+1):
+            a[i, j], a[j, i] = a[j, i], a[i, j]
+
     return a
 
 # Functia calculeaza solutia sistemului
