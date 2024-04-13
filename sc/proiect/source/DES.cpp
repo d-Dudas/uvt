@@ -4,7 +4,7 @@
 #include <fstream>
 #include <algorithm>
 
-int PC1[56] =
+constexpr int PC1[56] =
 {
     57, 49, 41, 33, 25, 17, 9,
     1, 58, 50, 42, 34, 26, 18,
@@ -16,7 +16,7 @@ int PC1[56] =
     21, 13, 5, 28, 20, 12, 4
 };
 
-int shifts[16] =
+constexpr int shifts[16] =
 {
     1, 1, 2, 2,
     2, 2, 2, 2,
@@ -24,7 +24,7 @@ int shifts[16] =
     2, 2, 2, 1
 };
 
-int PC2[48] =
+constexpr int PC2[48] =
 {
     14, 17, 11, 24, 1, 5,
     3, 28, 15, 6, 21, 10,
@@ -36,7 +36,7 @@ int PC2[48] =
     46, 42, 50, 36, 29, 32
 };
 
-int initialPermutationTable[64] =
+constexpr int initialPermutationTable[64] =
 {
     58, 50, 42, 34, 26, 18, 10, 2,
     60, 52, 44, 36, 28, 20, 12, 4,
@@ -48,7 +48,7 @@ int initialPermutationTable[64] =
     63, 55, 47, 39, 31, 23, 15, 7
 };
 
-int inversePermutationTable[64] =
+constexpr int inversePermutationTable[64] =
 {
     40, 8, 48, 16, 56, 24, 64, 32,
     39, 7, 47, 15, 55, 23, 63, 31,
@@ -60,7 +60,7 @@ int inversePermutationTable[64] =
     33, 1, 41, 9,  49, 17, 57, 25
 };
 
-int expansionTable[48] =
+constexpr int expansionTable[48] =
 {
     32, 1, 2, 3, 4, 5, 4, 5,
     6, 7, 8, 9, 8, 9, 10, 11,
@@ -70,7 +70,7 @@ int expansionTable[48] =
     28, 29, 28, 29, 30, 31, 32, 1
 };
 
-int substitutionBoxes[8][4][16]=
+constexpr int substitutionBoxes[8][4][16]=
 {
     {
         14,4,13,1,2,15,11,8,3,10,6,12,5,9,0,7,
@@ -122,7 +122,7 @@ int substitutionBoxes[8][4][16]=
     }
 };
 
-int permutationTable[32] =
+constexpr int permutationTable[32] =
 {
     16, 7, 20, 21, 29, 12, 28, 17,
     1, 15, 23, 26, 5, 18, 31, 10,
@@ -130,7 +130,7 @@ int permutationTable[32] =
     19, 13, 30, 6, 22, 11, 4, 25
 };
 
-std::bitset<56> DES::initialKeyPermutation(const std::bitset<64>& key)
+const std::bitset<56> DES::initialKeyPermutation(const std::bitset<64>& key)
 {
     std::bitset<56> permutedKey;
     for (int i = 0; i < 56; i++) {
@@ -139,12 +139,12 @@ std::bitset<56> DES::initialKeyPermutation(const std::bitset<64>& key)
     return permutedKey;
 }
 
-std::bitset<28> DES::leftCircularShift(std::bitset<28>& halfKey, int shifts)
+const std::bitset<28> DES::leftCircularShift(std::bitset<28>& halfKey, int shifts)
 {
     return (halfKey << shifts) | (halfKey >> (28 - shifts));
 }
 
-std::vector<std::bitset<48>> DES::generateKeys(const std::bitset<64>& key) {
+const std::vector<std::bitset<48>> DES::generateKeys(const std::bitset<64>& key) {
     std::bitset<56> permutedKey = initialKeyPermutation(key);
     std::bitset<28> left = std::bitset<28>((permutedKey >> 28).to_ulong());
     std::bitset<28> right = std::bitset<28>((permutedKey & std::bitset<56>(0x00FFFFFFF)).to_ulong());
@@ -164,7 +164,7 @@ std::vector<std::bitset<48>> DES::generateKeys(const std::bitset<64>& key) {
     return subKeys;
 }
 
-std::bitset<64> DES::keyStringToBitset(std::string keyStr)
+const std::bitset<64> DES::keyStringToBitset(std::string& keyStr)
 {
     std::bitset<64> bitset;
     for (size_t i = 0; i < 8; i++) {
@@ -177,7 +177,7 @@ std::bitset<64> DES::keyStringToBitset(std::string keyStr)
     return bitset;
 }
 
-std::bitset<48> DES::createExpandedBlock(const std::bitset<32>& halfBlock)
+const std::bitset<48> DES::createExpandedBlock(const std::bitset<32>& halfBlock)
 {
     std::bitset<48> expandedBlock;
     for (int i = 0; i < 48; i++)
@@ -187,7 +187,7 @@ std::bitset<48> DES::createExpandedBlock(const std::bitset<32>& halfBlock)
     return expandedBlock;
 }
 
-std::bitset<32> DES::applySubstitutionBoxesPermutations(const std::bitset<48>& xored)
+const std::bitset<32> DES::applySubstitutionBoxesPermutations(const std::bitset<48>& xored)
 {
     std::bitset<32> output;
     for (int i = 0; i < 8; i++)
@@ -204,7 +204,7 @@ std::bitset<32> DES::applySubstitutionBoxesPermutations(const std::bitset<48>& x
     return output;
 }
 
-std::bitset<32> DES::applyFinalPermutation(const std::bitset<32>& block)
+const std::bitset<32> DES::applyFinalPermutation(const std::bitset<32>& block)
 {
     std::bitset<32> permuted;
     for (int i = 0; i < 32; i++)
@@ -215,7 +215,7 @@ std::bitset<32> DES::applyFinalPermutation(const std::bitset<32>& block)
 
 }
 
-std::bitset<32> DES::feistelFunction(const std::bitset<32>& halfBlock, const std::bitset<48>& key)
+const std::bitset<32> DES::feistelFunction(const std::bitset<32>& halfBlock, const std::bitset<48>& key)
 {
     std::bitset<48> expandedBlock = createExpandedBlock(halfBlock);
     std::bitset<48> xored = expandedBlock ^ key;
@@ -225,7 +225,7 @@ std::bitset<32> DES::feistelFunction(const std::bitset<32>& halfBlock, const std
     return permuted;
 }
 
-std::bitset<64> DES::applyInitialPermutation(const std::bitset<64>& block)
+const std::bitset<64> DES::applyInitialPermutation(const std::bitset<64>& block)
 {
     std::bitset<64> permutedBlock;
     for (int i = 0; i < 64; i++) {
@@ -235,7 +235,7 @@ std::bitset<64> DES::applyInitialPermutation(const std::bitset<64>& block)
     return permutedBlock;
 }
 
-void DES::applyFeistelFunction(std::bitset<64> &permutedBlock, std::vector<std::bitset<48>> &subKeys)
+const void DES::applyFeistelFunction(std::bitset<64> &permutedBlock, std::vector<std::bitset<48>> &subKeys)
 {
     std::bitset<32> left = std::bitset<32>((permutedBlock >> 32).to_ulong());
     std::bitset<32> right = std::bitset<32>((permutedBlock & std::bitset<64>(0xFFFFFFFF)).to_ulong());
@@ -251,7 +251,7 @@ void DES::applyFeistelFunction(std::bitset<64> &permutedBlock, std::vector<std::
     permutedBlock = (std::bitset<64>(right.to_ulong()) << 32) | std::bitset<64>(left.to_ulong());
 }
 
-std::bitset<64> DES::applyInversePermutation(const std::bitset<64>& permutedBlock)
+const std::bitset<64> DES::applyInversePermutation(const std::bitset<64>& permutedBlock)
 {
     std::bitset<64> finalBlock;
     for (int i = 0; i < 64; i++) {
@@ -261,7 +261,7 @@ std::bitset<64> DES::applyInversePermutation(const std::bitset<64>& permutedBloc
     return finalBlock;
 }
 
-std::bitset<64> DES::applyPermutations(std::bitset<64> block, std::vector<std::bitset<48>> subKeys)
+const std::bitset<64> DES::applyPermutations(std::bitset<64>& block, std::vector<std::bitset<48>>& subKeys)
 {
     std::bitset<64> permutedBlock = applyInitialPermutation(block);
     applyFeistelFunction(permutedBlock, subKeys);
@@ -270,7 +270,23 @@ std::bitset<64> DES::applyPermutations(std::bitset<64> block, std::vector<std::b
     return finalBlock;
 }
 
-void DES::applyPermutationsOnChunks(IOConfig& ioConfig, std::vector<std::bitset<48>>& subKeys)
+const std::bitset<64> DES::convertCharBufferToBitset(const char *buffer, int bufferSize)
+{
+    std::bitset<64> block;
+    for (int i = 0; i < bufferSize; ++i)
+    {
+        block = (block << 8) | std::bitset<64>(static_cast<unsigned char>(buffer[i]));
+    }
+
+    return block;
+}
+
+const void DES::addPaddingToBitset(std::bitset<64>& block, int originalSize)
+{
+    block <<= 8 * (8 - originalSize);
+}
+
+const void DES::applyPermutationsOnChunks(IOConfig& ioConfig, std::vector<std::bitset<48>>& subKeys)
 {
     std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);
     std::ofstream outputFile(ioConfig.outputFile, std::ios::binary);
@@ -284,15 +300,11 @@ void DES::applyPermutationsOnChunks(IOConfig& ioConfig, std::vector<std::bitset<
     char buffer[8];
     while (inputFile.read(buffer, 8) || inputFile.gcount() > 0)
     {
-        std::bitset<64> block;
-        for (int i = 0; i < inputFile.gcount(); ++i)
-        {
-            block = (block << 8) | std::bitset<64>(static_cast<unsigned char>(buffer[i]));
-        }
+        std::bitset<64> block = convertCharBufferToBitset(buffer, inputFile.gcount());
 
         if (inputFile.gcount() < 8)
         {
-            block <<= 8 * (8 - inputFile.gcount());
+            addPaddingToBitset(block, inputFile.gcount());
         }
 
         std::bitset<64> encryptedBlock = applyPermutations(block, subKeys);
@@ -306,7 +318,7 @@ void DES::applyPermutationsOnChunks(IOConfig& ioConfig, std::vector<std::bitset<
     outputFile.close();
 }
 
-void DES::encrypt(IOConfig& ioConfig)
+const void DES::encrypt(IOConfig& ioConfig)
 {
     std::bitset<64> key = keyStringToBitset(ioConfig.key);
     std::vector<std::bitset<48>> subKeys = generateKeys(key);
@@ -314,7 +326,7 @@ void DES::encrypt(IOConfig& ioConfig)
     applyPermutationsOnChunks(ioConfig, subKeys);
 }
 
-void DES::decrypt(IOConfig& ioConfig)
+const void DES::decrypt(IOConfig& ioConfig)
 {
     std::bitset<64> key = keyStringToBitset(ioConfig.key);
     std::vector<std::bitset<48>> subKeys = generateKeys(key);
