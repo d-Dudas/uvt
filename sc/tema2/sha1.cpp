@@ -185,10 +185,36 @@ int parseOptions(int argc, char* argv[], IOConfiguratuin& ioConfig)
 	return SUCCESS;
 }
 
+//	------------------------------------------------------------------
+
+void writeResult(IOConfiguratuin &ioConfig)
+{
+    if (!ioConfig.outputFile.empty())
+    {
+        std::ofstream out(ioConfig.outputFile);
+        if (out.is_open())
+        {
+            out << digestToString(H);
+            out.close();
+            std::cout << "Result written to " << ioConfig.outputFile << "\n";
+        }
+        else
+        {
+            std::cerr << "Could not open output file\n";
+            std::cout << digestToString(H) << "\n";
+        }
+    }
+    else
+    {
+        std::cout << digestToString(H) << "\n";
+    }
+}
+
 //	==================================================================
 
-int main(int argc, char* argv[]) {
-	IOConfiguratuin ioConfig;
+int main(int argc, char *argv[])
+{
+    IOConfiguratuin ioConfig;
 
 	if(parseOptions(argc, argv, ioConfig) != SUCCESS)
 	{
@@ -228,27 +254,9 @@ int main(int argc, char* argv[]) {
 
 	inFile.close();
 
-	if (!ioConfig.outputFile.empty())
-	{
-        std::ofstream out(ioConfig.outputFile);
-        if (out.is_open())
-		{
-            out << digestToString(H);
-            out.close();
-			std::cout << "Result written to " << ioConfig.outputFile << "\n";
-		}
-		else
-		{
-            std::cerr << "Could not open output file\n";
-			std::cout << digestToString(H) << "\n";
-        }
-    }
-	else
-	{
-		std::cout << digestToString(H) << "\n";
-    }
+    writeResult(ioConfig);
 
-	return SUCCESS;
+    return SUCCESS;
 }
 
 //	******************************************************************
