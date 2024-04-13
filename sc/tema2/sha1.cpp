@@ -178,7 +178,7 @@ int parseOptions(int argc, char* argv[], IOConfiguratuin& ioConfig)
 
 	if (!ioConfig.inputSpecified)
 	{
-        std::cerr << "Input file must be specified with -i\n";
+        std::cerr << "Usage: " << argv[0] << " -i inputfile [-o outputfile]\n";
 		return FAILURE;
 	}
 
