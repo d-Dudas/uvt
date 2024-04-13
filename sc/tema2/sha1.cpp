@@ -1,16 +1,17 @@
-
 //	*********************************************************************
 //	*  sha1.cpp : cpp source for the hash function sha-1 implemntation  *
 //	*  the implementation is based on the specification doc fips 180-1  *
 //	*********************************************************************
 
 #include "sha1.h"
+
 #include <string.h>
 #include <stdio.h>
-
-//	==================================================================
-//	methods to be implemented
-//	------------------------------------------------------------------
+#include <string>
+#include <unistd.h>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
 void initHs() {
 	// load the initial values for H's
@@ -30,14 +31,6 @@ void initKs() {
 	for (i=20; i<40 ; i++)   K[i] = 0x6ed9eba1;
 	for (i=40; i<60 ; i++)   K[i] = 0x8f1bbcdc;
 	for (i=60; i<80 ; i++)   K[i] = 0xca62c1d6;
-}
-
-//	------------------------------------------------------------------
-
-int getMessage(int k) {
-    int msgLen = strlen(msg[k]);
-    memcpy(binmsg, msg[k], msgLen);
-    return msgLen;
 }
 
 //	------------------------------------------------------------------
@@ -85,80 +78,161 @@ void getAsfromHs() {
 
 //	------------------------------------------------------------------
 
-void displayDigest(uint32 H[]) {
-	printf(" digest value - %9x %9x %9x %9x %9x\n\n",
-		H[0], H[1], H[2], H[3], H[4]);
+std::string digestToString(uint32 H[]) {
+	char buffer[256];
+	sprintf(buffer, "%9x %9x %9x %9x %9x",
+			H[0], H[1], H[2], H[3], H[4]);
+	return std::string(buffer);
+}
+
+//	------------------------------------------------------------------
+
+void hashBlocks(uint numBlocks)
+{
+	for (int i=0; i<numBlocks; i++)
+	{
+		getWsfromM(i);
+
+		for (int j=16; j<80; j++) {
+			W[j] = W[j-3]^W[j-8]^W[j-14]^W[j-16];
+			W[j] = S(W[j], 1);
+		}
+
+		getAsfromHs();
+
+		for (int j=0; j<80; j++) {
+			TEMP = S(A,5);
+			int cit = j / 20;
+
+			switch (cit)
+			{
+			case 0:
+				TEMP += F0(B,C,D);
+				break;
+			case 1:
+				TEMP += F1(B,C,D);
+				break;
+			case 2:
+				TEMP += F2(B,C,D);
+				break;
+			case 3:
+				TEMP += F3(B,C,D);
+				break;
+			}
+
+			TEMP = TEMP + E + W[j] + K[j];
+
+			E=D;
+			D=C;
+			C=S(B,30);
+			B=A;
+			A=TEMP;
+		}
+
+		H[0] = H[0] + A;
+		H[1] = H[1] + B;
+		H[2] = H[2] + C;
+		H[3] = H[3] + D;
+		H[4] = H[4] + E;
+	}
+}
+
+//	------------------------------------------------------------------
+
+struct IOConfiguratuin
+{
+	std::string inputFile;
+	std::string outputFile;
+	bool inputSpecified = false;
+};
+
+//	------------------------------------------------------------------
+
+int parseOptions(int argc, char* argv[], IOConfiguratuin& ioConfig)
+{
+	int opt;
+	while ((opt = getopt(argc, argv, "i:o:")) != -1)
+	{
+		switch (opt)
+		{
+			case 'i':
+				ioConfig.inputFile = optarg;
+				ioConfig.inputSpecified = true;
+				break;
+			case 'o':
+				ioConfig.outputFile = optarg;
+				break;
+			default:
+				std::cerr << "Usage: " << argv[0] << " -i inputfile [-o outputfile]\n";
+				return FAILURE;
+		}
+	}
+
+	if (!ioConfig.inputSpecified)
+	{
+        std::cerr << "Input file must be specified with -i\n";
+		return FAILURE;
+	}
+
+	return SUCCESS;
 }
 
 //	==================================================================
 
 int main(int argc, char* argv[]) {
-	int i, j, k;
-	int messLen;
-	int numBlocks;
+	IOConfiguratuin ioConfig;
 
-	// parse all 3 test messages
-	for (k=0; k<3; k++) {
-		initKs();
-		initHs();
-
-		if (k!=2) {
-            messLen = getMessage(k);
-		} else {
-            // third message is much bigger
-            memset((void *)(binmsg), 'a', 1000000);
-            messLen = 1000000;
-		}
-		numBlocks = paddMessage(messLen);
-
-		for (i=0; i<numBlocks; i++) {
-			getWsfromM(i);
-
-			for (j=16; j<80; j++) {
-				W[j] = W[j-3]^W[j-8]^W[j-14]^W[j-16];
-				W[j] = S(W[j], 1);
-			}
-
-			getAsfromHs();
-
-			for (j=0; j<80; j++) {
-				TEMP = S(A,5);
-				int cit = j / 20;
-
-				switch (cit) {
-				case 0:
-					TEMP += F0(B,C,D);
-					break;
-				case 1:
-					TEMP += F1(B,C,D);
-					break;
-				case 2:
-					TEMP += F2(B,C,D);
-					break;
-				case 3:
-					TEMP += F3(B,C,D);
-					break;
-				}
-
-				TEMP = TEMP + E + W[j] + K[j];
-
-				E=D;
-				D=C;
-				C=S(B,30);
-				B=A;
-				A=TEMP;
-//				printf("%9x %9x %9x %9x %9x\n", A, B, C, D, E);
-			}
-
-			H[0] = H[0] + A;
-			H[1] = H[1] + B;
-			H[2] = H[2] + C;
-			H[3] = H[3] + D;
-			H[4] = H[4] + E;
-		}
-        displayDigest(H);
+	if(parseOptions(argc, argv, ioConfig) != SUCCESS)
+	{
+		return FAILURE;
 	}
-	return 0;
+
+	std::ifstream inFile(ioConfig.inputFile, std::ios::binary);
+	if (!inFile)
+	{
+		std::cerr << "Could not open input file\n";
+		return FAILURE;
+	}
+
+	initKs();
+	initHs();
+
+	int numBlocks;
+	char buffer[512];
+	while (inFile.read(buffer, sizeof(buffer))) {
+		std::streamsize bytesRead = inFile.gcount();
+		memcpy(binmsg, buffer, bytesRead);
+
+		numBlocks = paddMessage(bytesRead);
+		hashBlocks(numBlocks);
+	}
+
+	// Handle last block if it's smaller than 512 bytes
+	if (inFile.gcount() > 0) {
+		std::streamsize bytesRead = inFile.gcount();
+		memcpy(binmsg, buffer, bytesRead);
+
+		numBlocks = paddMessage(bytesRead);
+		hashBlocks(numBlocks);
+	}
+
+	inFile.close();
+
+	if (!ioConfig.outputFile.empty()) {
+        std::ofstream out(ioConfig.outputFile);
+        if (out.is_open()) {
+            out << digestToString(H);
+            out.close();
+			std::cout << "Result written to " << ioConfig.outputFile << "\n";
+		} else {
+            std::cerr << "Could not open output file\n";
+			std::cout << digestToString(H) << "\n";
+        }
+    } else {
+		std::cout << digestToString(H) << "\n";
+    }
+
+	return SUCCESS;
 }
 
 //	******************************************************************

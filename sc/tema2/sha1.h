@@ -1,10 +1,10 @@
-
 //	***************************************************************
 //	*  sha1.h : macros and functions for the hash function sha-1  *
 //	***************************************************************
+#pragma once
 
-#ifndef _SHA1_H
-#define _SHA1_H
+#define SUCCESS 0
+#define FAILURE 1
 
 #define uint8 unsigned char
 #define uint32 unsigned long
@@ -38,16 +38,3 @@ uint32 W[80];
 uint32 A, B, C, D, E;
 uint32 TEMP;
 uint8 binmsg[10001000];
-
-//	testing messages, last two come from fips 180-1
-
-char * msg[] =
-{
-	"abc",
-	"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
-};
-
-#endif	// _SHA1_H
-
-//	******************************************************************
-
