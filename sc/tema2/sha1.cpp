@@ -35,7 +35,6 @@ void initKs() {
 //	------------------------------------------------------------------
 
 int getMessage(int k) {
-	// copy message k from msg[k] to binmsg
     int msgLen = strlen(msg[k]);
     memcpy(binmsg, msg[k], msgLen);
     return msgLen;
@@ -44,18 +43,16 @@ int getMessage(int k) {
 //	------------------------------------------------------------------
 
 int paddMessage(int messLen) {
-
-	int i;
 	int origLenBits = messLen * 8;
 	int fullLen = ((messLen + 8) / 64) * 64 + 64;
 
 	binmsg[messLen] = 0x80; // 0x80 in binary si 10000000
 
-	for (i = messLen + 1; i < fullLen - 8; i++) {
+	for (int i = messLen + 1; i < fullLen - 8; i++) {
 		binmsg[i] = 0;
 	}
 
-	for (i = 0; i < 8; i++) {
+	for (int i = 0; i < 8; i++) {
         binmsg[fullLen - 1 - i] = (origLenBits >> (i * 8)) & 0xFF;
     }
 
@@ -64,34 +61,21 @@ int paddMessage(int messLen) {
 
 //	------------------------------------------------------------------
 
-uint32 rotateLeft(uint32 value, int bits) {
-    return (value << bits) | (value >> (32 - bits));
-}
-
 void getWsfromM(int currentBlock) {
-    // fill out the W[] from the current block
-    int i;
     uint32 word;
 
-    // Copy the first 16 words from the block to W
-    for (i = 0; i < 16; i++) {
+    for (int i = 0; i < 16; i++) {
         word = 0;
         for (int j = 0; j < 4; j++) {
             word = (word << 8) | binmsg[currentBlock * 64 + i * 4 + j];
         }
         W[i] = word;
     }
-
-    // Generate the remaining 64 words
-    for (i = 16; i < 80; i++) {
-        W[i] = rotateLeft(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
-    }
 }
 
 //	------------------------------------------------------------------
 
 void getAsfromHs() {
-    // initialize A, B, C, D, E from H's
     A = H[0];
     B = H[1];
     C = H[2];
