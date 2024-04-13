@@ -13,7 +13,8 @@
 #include <iostream>
 #include <iomanip>
 
-void initHs() {
+void initHs()
+{
 	// load the initial values for H's
 	H[0] = 0x67452301;
 	H[1] = 0xefcdab89;
@@ -24,7 +25,8 @@ void initHs() {
 
 //	------------------------------------------------------------------
 
-void initKs() {
+void initKs()
+{
 	// load the initial values for K's
 	int i;
 	for (i=00; i<20 ; i++)   K[i] = 0x5a827999;
@@ -35,7 +37,8 @@ void initKs() {
 
 //	------------------------------------------------------------------
 
-int paddMessage(int messLen) {
+int paddMessage(int messLen)
+{
 	int origLenBits = messLen * 8;
 	int fullLen = ((messLen + 8) / 64) * 64 + 64;
 
@@ -54,7 +57,8 @@ int paddMessage(int messLen) {
 
 //	------------------------------------------------------------------
 
-void getWsfromM(int currentBlock) {
+void getWsfromM(int currentBlock)
+{
     uint32 word;
 
     for (int i = 0; i < 16; i++) {
@@ -68,7 +72,8 @@ void getWsfromM(int currentBlock) {
 
 //	------------------------------------------------------------------
 
-void getAsfromHs() {
+void getAsfromHs()
+{
     A = H[0];
     B = H[1];
     C = H[2];
@@ -78,7 +83,8 @@ void getAsfromHs() {
 
 //	------------------------------------------------------------------
 
-std::string digestToString(uint32 H[]) {
+std::string digestToString(uint32 H[])
+{
 	char buffer[256];
 	sprintf(buffer, "%9x %9x %9x %9x %9x",
 			H[0], H[1], H[2], H[3], H[4]);
@@ -93,14 +99,16 @@ void hashBlocks(uint numBlocks)
 	{
 		getWsfromM(i);
 
-		for (int j=16; j<80; j++) {
+		for (int j=16; j<80; j++)
+		{
 			W[j] = W[j-3]^W[j-8]^W[j-14]^W[j-16];
 			W[j] = S(W[j], 1);
 		}
 
 		getAsfromHs();
 
-		for (int j=0; j<80; j++) {
+		for (int j=0; j<80; j++)
+		{
 			TEMP = S(A,5);
 			int cit = j / 20;
 
@@ -199,7 +207,8 @@ int main(int argc, char* argv[]) {
 
 	int numBlocks;
 	char buffer[512];
-	while (inFile.read(buffer, sizeof(buffer))) {
+	while (inFile.read(buffer, sizeof(buffer)))
+	{
 		std::streamsize bytesRead = inFile.gcount();
 		memcpy(binmsg, buffer, bytesRead);
 
@@ -208,7 +217,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Handle last block if it's smaller than 512 bytes
-	if (inFile.gcount() > 0) {
+	if (inFile.gcount() > 0)
+	{
 		std::streamsize bytesRead = inFile.gcount();
 		memcpy(binmsg, buffer, bytesRead);
 
@@ -218,17 +228,23 @@ int main(int argc, char* argv[]) {
 
 	inFile.close();
 
-	if (!ioConfig.outputFile.empty()) {
+	if (!ioConfig.outputFile.empty())
+	{
         std::ofstream out(ioConfig.outputFile);
-        if (out.is_open()) {
+        if (out.is_open())
+		{
             out << digestToString(H);
             out.close();
 			std::cout << "Result written to " << ioConfig.outputFile << "\n";
-		} else {
+		}
+		else
+		{
             std::cerr << "Could not open output file\n";
 			std::cout << digestToString(H) << "\n";
         }
-    } else {
+    }
+	else
+	{
 		std::cout << digestToString(H) << "\n";
     }
 
