@@ -4,6 +4,27 @@
 #include <iostream> // remove this later
 #include <fstream>
 
+AES::AES(aes::Versions version)
+{
+    switch (version)
+    {
+    case aes::Versions::AES_128:
+        numberOfRounds = 10;
+        keyCoefficient = 4;
+        break;
+    case aes::Versions::AES_192:
+        numberOfRounds = 12;
+        keyCoefficient = 6;
+        break;
+    case aes::Versions::AES_256:
+        numberOfRounds = 14;
+        keyCoefficient = 8;
+        break;
+    default:
+        break;
+    }
+}
+
 void AES::keyExpansionCore(std::bitset<8> word[4], int rconIterationCount)
 {
     // Rotate left
@@ -26,26 +47,33 @@ void AES::keyExpansionCore(std::bitset<8> word[4], int rconIterationCount)
 std::vector<std::bitset<8>> AES::keyExpansion(const std::string& key)
 {
     std::vector<std::bitset<8>> expandedKey;
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 4 * keyCoefficient; i++)
     {
         expandedKey.push_back(std::bitset<8>(key[i]));
     }
 
-    int bytesGenerated = 16;
+    int bytesGenerated = 4 * keyCoefficient;
     int rconIterationCount = 1;
     std::bitset<8> temp[4];
 
-    while (bytesGenerated < 176)
+    while (bytesGenerated < (16 * (numberOfRounds + 1)))
     {
         for (int i = 0; i < 4; i++)
         {
             temp[i] = expandedKey[i + bytesGenerated - 4];
         }
 
-        if (bytesGenerated % 16 == 0)
+        if (bytesGenerated / 4 % keyCoefficient == 0)
         {
             keyExpansionCore(temp, rconIterationCount);
             rconIterationCount++;
+        }
+        else if(keyCoefficient > 6 && bytesGenerated / 4 % keyCoefficient == 4)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                temp[i] = s[temp[i].to_ulong()];
+            }
         }
 
         for (int i = 0; i < 4; i++)
@@ -173,22 +201,21 @@ void AES::encryptBlock(std::vector<std::bitset<8>>& plaintext, const std::vector
     std::vector<std::bitset<8>> state = plaintext;
 
     // Initial round key addition
-    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin(), expandedKeys.begin() + 16));
+    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin(), expandedKeys.begin() + blockSize));
 
     // Main rounds
-    for (int round = 1; round < 10; ++round) { // 9 rounds if AES-128
+    for (int round = 1; round < numberOfRounds; ++round) {
         subBytes(state);
         shiftRows(state);
         mixColumns(state);
-        addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + 16 * round, expandedKeys.begin() + 16 * (round + 1)));
+        addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + blockSize * round, expandedKeys.begin() + blockSize * (round + 1)));
     }
 
-    // Final round (no MixColumns)
     subBytes(state);
     shiftRows(state);
-    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + 160, expandedKeys.begin() + 176));
+    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + blockSize * numberOfRounds, expandedKeys.begin() + blockSize * (numberOfRounds + 1)));
 
-    plaintext = state; // Output the encrypted state
+    plaintext = state;
 }
 
 std::vector<std::bitset<8>> AES::convertCharBufferToBitsetVector(const char* buffer, size_t length)
@@ -206,7 +233,6 @@ std::vector<std::bitset<8>> AES::convertCharBufferToBitsetVector(const char* buf
 
 void AES::addPKCS7Padding(std::vector<std::bitset<8>>& block)
 {
-    size_t blockSize = 16;
     size_t paddingSize = blockSize - (block.size() % blockSize);
     paddingSize = (paddingSize == 0) ? blockSize : paddingSize;
 
@@ -220,7 +246,7 @@ void AES::addPKCS7Padding(std::vector<std::bitset<8>>& block)
 
 void AES::encrypt(IOConfig& ioConfig)
 {
-    for (int i = 0; i < 16 && ioConfig.key.size() < 16; i++)
+    for (int i = 0; i < 4 * keyCoefficient && ioConfig.key.size() < 4 * keyCoefficient; i++)
     {
         ioConfig.key += ioConfig.key[i];
     }
@@ -236,8 +262,8 @@ void AES::encrypt(IOConfig& ioConfig)
         return;
     }
 
-    char buffer[16];
-    while (inputFile.read(buffer, 16))
+    char buffer[blockSize];
+    while (inputFile.read(buffer, blockSize))
     {
         std::vector<std::bitset<8>> block = convertCharBufferToBitsetVector(buffer, inputFile.gcount());
 
@@ -267,20 +293,20 @@ void AES::decryptBlock(std::vector<std::bitset<8>> &ciphertext, const std::vecto
     std::vector<std::bitset<8>> state = ciphertext;
 
     // Initial round key addition
-    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + 160, expandedKeys.begin() + 176));
+    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + blockSize * numberOfRounds, expandedKeys.begin() + blockSize * (numberOfRounds + 1)));
 
     // Main rounds
-    for (int round = 9; round > 0; --round) { // 9 rounds if AES-128
+    for (int round = numberOfRounds - 1; round > 0; --round) { // 9 rounds if AES-128
         invShiftRows(state);
         invSubBytes(state);
-        addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + 16 * round, expandedKeys.begin() + 16 * (round + 1)));
+        addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin() + blockSize * round, expandedKeys.begin() + blockSize * (round + 1)));
         invMixColumns(state);
     }
 
     // Final round (no MixColumns)
     invShiftRows(state);
     invSubBytes(state);
-    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin(), expandedKeys.begin() + 16));
+    addRoundKey(state, std::vector<std::bitset<8>>(expandedKeys.begin(), expandedKeys.begin() + blockSize));
 
     ciphertext = state; // Output the decrypted state
 }
@@ -311,7 +337,7 @@ void AES::removePKCS7Padding(std::vector<std::bitset<8>>& data)
 
 void AES::decrypt(IOConfig& ioConfig)
 {
-    for (int i = 0; i < 16 && ioConfig.key.size() < 16; i++)
+    for (int i = 0; i < 4 * keyCoefficient && ioConfig.key.size() < 4 * keyCoefficient; i++)
     {
         ioConfig.key += ioConfig.key[i];
     }
@@ -327,8 +353,8 @@ void AES::decrypt(IOConfig& ioConfig)
         return;
     }
 
-    char buffer[16];
-    while (inputFile.read(buffer, 16))
+    char buffer[blockSize];
+    while (inputFile.read(buffer, blockSize))
     {
         std::vector<std::bitset<8>> block = convertCharBufferToBitsetVector(buffer, inputFile.gcount());
 

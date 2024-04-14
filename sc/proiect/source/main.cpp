@@ -5,6 +5,7 @@
 #include <includes/Constants.hpp>
 #include <includes/DES.hpp>
 #include <includes/aes/AES.hpp>
+#include <string.h>
 
 int parseOptions(int argc, char* argv[], IOConfig& ioConfig)
 {
@@ -32,20 +33,30 @@ int parseOptions(int argc, char* argv[], IOConfig& ioConfig)
 				}
 				break;
 			case 't':
-				switch(optarg[0]) // TODO: update this to compare strings
+				if (strcmp(optarg, "des") == 0)
 				{
-					case 'd':
-						ioConfig.algorithm = AlgorithmSuite::DES;
-						break;
-					case 'a':
-						ioConfig.algorithm = AlgorithmSuite::AES;
-						break;
-					case 'r':
-						ioConfig.algorithm = AlgorithmSuite::RSA;
-						break;
-					default:
-						std::cerr << "Invalid algorithm\nValid algorithms are: [\"des\", \"aes\", \"rsa\"]\n";
-						return FAILURE;
+					ioConfig.algorithm = AlgorithmSuite::DES;
+				}
+				else if (strcmp(optarg, "aes_128") == 0)
+				{
+					ioConfig.algorithm = AlgorithmSuite::AES_128;
+				}
+				else if (strcmp(optarg, "aes_192") == 0)
+				{
+					ioConfig.algorithm = AlgorithmSuite::AES_192;
+				}
+				else if (strcmp(optarg, "aes_256") == 0)
+				{
+					ioConfig.algorithm = AlgorithmSuite::AES_256;
+				}
+				else if (strcmp(optarg, "rsa") == 0)
+				{
+					ioConfig.algorithm = AlgorithmSuite::RSA;
+				}
+				else
+				{
+					std::cerr << "Invalid algorithm\nValid algorithms are: [\"des\", \"aes\", \"rsa\"]\n";
+					return FAILURE;
 				}
 				break;
 			default:
@@ -81,13 +92,33 @@ int main(int argc, char* argv[])
 			else
 				des.decrypt(config);
 			break;
-		case AlgorithmSuite::AES:
-			AES aes;
+		case AlgorithmSuite::AES_128:
+		{
+			AES aes(aes::Versions::AES_128);
 			if(config.encrypt)
 				aes.encrypt(config);
 			else
 			    aes.decrypt(config);
 			break;
+		}
+		case AlgorithmSuite::AES_192:
+		{
+			AES aes(aes::Versions::AES_192);
+			if(config.encrypt)
+				aes.encrypt(config);
+			else
+			    aes.decrypt(config);
+			break;
+		}
+		case AlgorithmSuite::AES_256:
+		{
+			AES aes(aes::Versions::AES_256);
+			if(config.encrypt)
+				aes.encrypt(config);
+			else
+			    aes.decrypt(config);
+			break;
+		}
 	}
 
 	return 0;

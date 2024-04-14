@@ -4,13 +4,19 @@
 #include <vector>
 
 #include <includes/IOConfig.hpp>
+#include <includes/aes/Versions.hpp>
 
 class AES
 {
 public:
+    AES(aes::Versions version);
     void encrypt(IOConfig& ioConfig);
     void decrypt(IOConfig& ioConfig);
 private:
+    u_int8_t numberOfRounds;
+    u_int8_t keyCoefficient;
+    static const u_int8_t blockSize = 16;
+
     // key
     void keyExpansionCore(std::bitset<8> word[4], int rconIterationCount);
     std::vector<std::bitset<8>> keyExpansion(const std::string& key);

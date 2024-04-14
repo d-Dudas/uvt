@@ -2,7 +2,9 @@
 
 enum class AlgorithmSuite
 {
-    AES,
+    AES_128,
+    AES_192,
+    AES_256,
     DES,
     RSA,
 

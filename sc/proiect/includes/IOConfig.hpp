@@ -11,4 +11,5 @@ struct IOConfig
     std::string key;
     bool encrypt = false;
     AlgorithmSuite algorithm = AlgorithmSuite::INVALID;
+    
 };
