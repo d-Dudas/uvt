@@ -318,7 +318,7 @@ const void DES::applyPermutationsOnChunks(IOConfig& ioConfig, std::vector<std::b
     outputFile.close();
 }
 
-const void DES::encrypt(IOConfig& ioConfig)
+void DES::encrypt(IOConfig& ioConfig)
 {
     std::bitset<64> key = keyStringToBitset(ioConfig.key);
     std::vector<std::bitset<48>> subKeys = generateKeys(key);
@@ -326,7 +326,7 @@ const void DES::encrypt(IOConfig& ioConfig)
     applyPermutationsOnChunks(ioConfig, subKeys);
 }
 
-const void DES::decrypt(IOConfig& ioConfig)
+void DES::decrypt(IOConfig& ioConfig)
 {
     std::bitset<64> key = keyStringToBitset(ioConfig.key);
     std::vector<std::bitset<48>> subKeys = generateKeys(key);

@@ -3,15 +3,16 @@
 #include <bitset>
 #include <vector>
 
+#include <includes/interfaces/ICryptographicAlgorithm.hpp>
 #include <includes/IOConfig.hpp>
 #include <includes/aes/Versions.hpp>
 
-class AES
+class AES : public ICryptographicAlgorithm
 {
 public:
     AES(aes::Versions version);
-    void encrypt(IOConfig& ioConfig);
-    void decrypt(IOConfig& ioConfig);
+    void encrypt(IOConfig& ioConfig) override;
+    void decrypt(IOConfig& ioConfig) override;
 private:
     u_int8_t numberOfRounds;
     u_int8_t keyCoefficient;

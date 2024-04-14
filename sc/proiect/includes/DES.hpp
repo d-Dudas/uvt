@@ -4,13 +4,14 @@
 #include <bitset>
 #include <vector>
 
+#include <includes/interfaces/ICryptographicAlgorithm.hpp>
 #include <includes/IOConfig.hpp>
 
-class DES
+class DES: public ICryptographicAlgorithm
 {
 public:
-    const void encrypt(IOConfig &ioConfig);
-    const void decrypt(IOConfig &ioConfig);
+    void encrypt(IOConfig &ioConfig) override;
+    void decrypt(IOConfig &ioConfig) override;
 
 private:
     const std::bitset<56> initialKeyPermutation(const std::bitset<64> &key);
