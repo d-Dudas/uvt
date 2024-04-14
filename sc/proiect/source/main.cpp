@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include <includes/Constants.hpp>
-#include <includes/DES.hpp>
 #include <includes/IOConfig.hpp>
+#include <includes/des/DES.hpp>
 #include <includes/aes/AES.hpp>
 
 void printUsage(char programName[])
@@ -44,7 +44,7 @@ int parseOptions(int argc, char *argv[], IOConfig &ioConfig,
     case 't':
       if (strcmp(optarg, "des") == 0)
       {
-        algorithm = std::make_unique<DES>();
+        algorithm = std::make_unique<des::DES>();
       }
       else if (strcmp(optarg, "aes_128") == 0)
       {
