@@ -5,8 +5,8 @@
 
 #include <includes/Constants.hpp>
 #include <includes/IOConfig.hpp>
-#include <includes/des/DES.hpp>
 #include <includes/aes/AES.hpp>
+#include <includes/des/DES.hpp>
 
 void printUsage(char programName[])
 {
@@ -48,15 +48,15 @@ int parseOptions(int argc, char *argv[], IOConfig &ioConfig,
       }
       else if (strcmp(optarg, "aes_128") == 0)
       {
-        algorithm = std::make_unique<AES>(aes::Versions::AES_128);
+        algorithm = std::make_unique<aes::AES>(aes::Versions::AES_128);
       }
       else if (strcmp(optarg, "aes_192") == 0)
       {
-        algorithm = std::make_unique<AES>(aes::Versions::AES_192);
+        algorithm = std::make_unique<aes::AES>(aes::Versions::AES_192);
       }
       else if (strcmp(optarg, "aes_256") == 0)
       {
-        algorithm = std::make_unique<AES>(aes::Versions::AES_256);
+        algorithm = std::make_unique<aes::AES>(aes::Versions::AES_256);
       }
       else if (strcmp(optarg, "rsa") == 0)
       {
