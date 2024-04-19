@@ -7,11 +7,13 @@
 #include <includes/IOConfig.hpp>
 #include <includes/aes/AES.hpp>
 #include <includes/des/DES.hpp>
+#include <includes/rsa/RSA.hpp>
 
 void printUsage(char programName[])
 {
-  std::cout << "Usage: " << programName
-            << " -t (type) -(d/e) inputfile -o outputfile -k key\n";
+  std::cout
+      << "Usage: " << programName
+      << " -t (type) -(d/e) inputfile -o outputfile -p passphrase -k keyfile\n";
   std::cout << "Type: [\"des\", \"aes_128\", \"aes_192\", \"aes_256\"]\n";
 }
 
@@ -19,27 +21,31 @@ int parseOptions(int argc, char *argv[], IOConfig &ioConfig,
                  std::unique_ptr<ICryptographicAlgorithm> &algorithm)
 {
   int opt;
-  while ((opt = getopt(argc, argv, "d:e:o:k:t:")) != -1)
+  while ((opt = getopt(argc, argv, "d:e:o:p:t:k:")) != -1)
   {
     switch (opt)
     {
     case 'd':
       ioConfig.inputFile = optarg;
+      ioConfig.operation = Operations::decrypt;
       break;
     case 'e':
       ioConfig.inputFile = optarg;
-      ioConfig.encrypt = true;
+      ioConfig.operation = Operations::encrypt;
       break;
     case 'o':
       ioConfig.outputFile = optarg;
       break;
-    case 'k':
-      ioConfig.key = optarg;
-      if (ioConfig.key.size() != 8)
+    case 'p':
+      ioConfig.passphrase = optarg;
+      if (ioConfig.passphrase.size() != 8)
       {
-        std::cerr << "Key must be 8 bytes (characters) long\n";
+        std::cerr << "Passphrase must be 8 bytes (characters) long\n";
         return FAILURE;
       }
+      break;
+    case 'k':
+      ioConfig.keyFile = optarg;
       break;
     case 't':
       if (strcmp(optarg, "des") == 0)
@@ -60,7 +66,7 @@ int parseOptions(int argc, char *argv[], IOConfig &ioConfig,
       }
       else if (strcmp(optarg, "rsa") == 0)
       {
-        // TBD
+        algorithm = std::make_unique<rsa::RSA>();
       }
       else
       {
@@ -75,7 +81,20 @@ int parseOptions(int argc, char *argv[], IOConfig &ioConfig,
     }
   }
 
-  if (ioConfig.inputFile.empty() || ioConfig.key.empty() ||
+  if (ioConfig.outputFile.empty())
+  {
+    ioConfig.outputFile = ioConfig.inputFile + ".out";
+  }
+
+  if (dynamic_cast<rsa::RSA *>(algorithm.get()) != nullptr and
+      ioConfig.operation == Operations::generateKey and
+      not ioConfig.keyFile.empty())
+  {
+    // key generation only reguires a filename to save the keys
+    return SUCCESS;
+  }
+
+  if (ioConfig.inputFile.empty() or ioConfig.passphrase.empty() or
       algorithm.get() == nullptr)
   {
     printUsage(argv[0]);
@@ -95,7 +114,11 @@ int main(int argc, char *argv[])
     return FAILURE;
   }
 
-  if (config.encrypt)
+  if (config.operation == Operations::generateKey)
+  {
+    dynamic_cast<rsa::RSA *>(algorithm.get())->generateKeys(config);
+  }
+  else if (config.operation == Operations::encrypt)
   {
     algorithm->encrypt(config);
   }
@@ -104,5 +127,5 @@ int main(int argc, char *argv[])
     algorithm->decrypt(config);
   }
 
-  return 0;
+  return SUCCESS;
 }

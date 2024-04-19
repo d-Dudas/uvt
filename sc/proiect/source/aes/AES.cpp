@@ -277,12 +277,12 @@ void AES::addPKCS7Padding(std::vector<std::bitset<8>> &block)
 void AES::encrypt(IOConfig &ioConfig)
 {
   for (int i = 0;
-       i < 4 * keyCoefficient && ioConfig.key.size() < 4 * keyCoefficient; i++)
+       i < 4 * keyCoefficient && ioConfig.passphrase.size() < 4 * keyCoefficient; i++)
   {
-    ioConfig.key += ioConfig.key[i];
+    ioConfig.passphrase += ioConfig.passphrase[i];
   }
 
-  std::vector<std::bitset<8>> expandedKey = keyExpansion(ioConfig.key);
+  std::vector<std::bitset<8>> expandedKey = keyExpansion(ioConfig.passphrase);
 
   std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);
   std::ofstream outputFile(ioConfig.outputFile, std::ios::binary);
@@ -381,12 +381,12 @@ void AES::removePKCS7Padding(std::vector<std::bitset<8>> &data)
 void AES::decrypt(IOConfig &ioConfig)
 {
   for (int i = 0;
-       i < 4 * keyCoefficient && ioConfig.key.size() < 4 * keyCoefficient; i++)
+       i < 4 * keyCoefficient && ioConfig.passphrase.size() < 4 * keyCoefficient; i++)
   {
-    ioConfig.key += ioConfig.key[i];
+    ioConfig.passphrase += ioConfig.passphrase[i];
   }
 
-  std::vector<std::bitset<8>> expandedKey = keyExpansion(ioConfig.key);
+  std::vector<std::bitset<8>> expandedKey = keyExpansion(ioConfig.passphrase);
 
   std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);
   std::ofstream outputFile(ioConfig.outputFile, std::ios::binary);
