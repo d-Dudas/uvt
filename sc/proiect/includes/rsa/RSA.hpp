@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gmpxx.h>
+
 #include <includes/interfaces/ICryptographicAlgorithm.hpp>
 
 namespace rsa
@@ -13,14 +14,15 @@ public:
   void decrypt(IOConfig &ioConfig) override;
 
 private:
-  void savePublicKey(const std::string &filename, const mpz_class &n);
-  void savePrivateKey(const std::string &filename, const mpz_class &n,
-                      const mpz_class &d);
-  void loadPrivateKey(const std ::string &filename, mpz_class &n, mpz_class &d);
-  void loadPublicKey(const std ::string &filename, mpz_class &n);
+  void saveKey(const std::string &filename, const mpz_class &a,
+               const mpz_class &b);
+  void loadKey(const std ::string &filename, mpz_class &a, mpz_class &b);
   mpz_class generateLargePrime();
+  mpz_class rsaEncrypt(const mpz_class &m, const mpz_class &e,
+                       const mpz_class &n);
+  mpz_class rsaDecrypt(const mpz_class &c, const mpz_class &d,
+                       const mpz_class &n);
 
-  const mpz_class e = 65537;
   const int keyBitSize = 1024;
 };
 } // namespace rsa

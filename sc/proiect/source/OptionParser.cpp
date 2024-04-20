@@ -166,6 +166,11 @@ int OptionParser::parseOptions(
     }
   }
 
+  if (ioConfig.outputFile.empty())
+  {
+    ioConfig.outputFile = ioConfig.inputFile + ".out";
+  }
+
   if (isIoConfigGoodForRSAKeyGeneration())
   {
     algorithm = std::make_unique<rsa::RSA>();
