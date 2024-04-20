@@ -9,8 +9,10 @@
 
 namespace rsa
 {
-void RSA::saveKey(const std::string &filename, const mpz_class &a,
-                  const mpz_class &b)
+void RSA::saveKey(
+    const std::string& filename,
+    const mpz_class& a,
+    const mpz_class& b)
 {
   std::ofstream outFile(filename, std::ios::trunc);
   if (outFile.is_open())
@@ -25,7 +27,7 @@ void RSA::saveKey(const std::string &filename, const mpz_class &a,
   }
 }
 
-void RSA::loadKey(const std ::string &filename, mpz_class &a, mpz_class &b)
+void RSA::loadKey(const std ::string& filename, mpz_class& a, mpz_class& b)
 {
   std::ifstream inFile(filename);
   if (inFile.is_open())
@@ -55,7 +57,7 @@ mpz_class RSA::generateLargePrime()
   return prime;
 }
 
-void RSA::generateKeys(IOConfig &ioConfig)
+void RSA::generateKeys(IOConfig& ioConfig)
 {
   mpz_class p, q;
 
@@ -73,7 +75,7 @@ void RSA::generateKeys(IOConfig &ioConfig)
   }
 
   mpz_class d;
-  if (!mpz_invert(d.get_mpz_t(), e.get_mpz_t(), phi.get_mpz_t()))
+  if (! mpz_invert(d.get_mpz_t(), e.get_mpz_t(), phi.get_mpz_t()))
   {
     throw std::runtime_error("Modular inverse of e cannot be computed.");
   }
@@ -85,15 +87,17 @@ void RSA::generateKeys(IOConfig &ioConfig)
   saveKey(publicKeyFile, n, e);
 }
 
-mpz_class RSA::rsaEncrypt(const mpz_class &m, const mpz_class &e,
-                          const mpz_class &n)
+mpz_class RSA::rsaEncrypt(
+    const mpz_class& m,
+    const mpz_class& e,
+    const mpz_class& n)
 {
   mpz_class c;
   mpz_powm(c.get_mpz_t(), m.get_mpz_t(), e.get_mpz_t(), n.get_mpz_t());
   return c;
 }
 
-void RSA::encrypt(IOConfig &ioConfig)
+void RSA::encrypt(IOConfig& ioConfig)
 {
   mpz_class n, e;
   const std::string publicKeyFile = ioConfig.keyFile;
@@ -105,7 +109,7 @@ void RSA::encrypt(IOConfig &ioConfig)
   if (inputFile.is_open() && outputFile.is_open())
   {
     char buffer[128];
-    while (!inputFile.eof())
+    while (! inputFile.eof())
     {
       inputFile.read(buffer, sizeof(buffer));
       std::streamsize bytesRead = inputFile.gcount();
@@ -116,14 +120,14 @@ void RSA::encrypt(IOConfig &ioConfig)
       }
 
       mpz_class m;
-      mpz_import(m.get_mpz_t(), sizeof(buffer), 1, sizeof(buffer[0]), 0, 0,
-                 buffer);
+      mpz_import(
+          m.get_mpz_t(), sizeof(buffer), 1, sizeof(buffer[0]), 0, 0, buffer);
 
       mpz_class c = rsaEncrypt(m, e, n);
 
       size_t countp;
-      char *cipherText =
-          (char *)mpz_export(nullptr, &countp, 1, 1, 0, 0, c.get_mpz_t());
+      char* cipherText =
+          (char*)mpz_export(nullptr, &countp, 1, 1, 0, 0, c.get_mpz_t());
 
       outputFile.write(cipherText, countp);
 
@@ -139,15 +143,17 @@ void RSA::encrypt(IOConfig &ioConfig)
   }
 }
 
-mpz_class RSA::rsaDecrypt(const mpz_class &c, const mpz_class &d,
-                          const mpz_class &n)
+mpz_class RSA::rsaDecrypt(
+    const mpz_class& c,
+    const mpz_class& d,
+    const mpz_class& n)
 {
   mpz_class m;
   mpz_powm(m.get_mpz_t(), c.get_mpz_t(), d.get_mpz_t(), n.get_mpz_t());
   return m;
 }
 
-void RSA::decrypt(IOConfig &ioConfig)
+void RSA::decrypt(IOConfig& ioConfig)
 {
   mpz_class n, d;
   const std::string privateKeyFile = ioConfig.keyFile;
@@ -164,14 +170,14 @@ void RSA::decrypt(IOConfig &ioConfig)
       std::streamsize bytesRead = inputFile.gcount();
 
       mpz_class c;
-      mpz_import(c.get_mpz_t(), sizeof(buffer), 1, sizeof(buffer[0]), 0, 0,
-                 buffer);
+      mpz_import(
+          c.get_mpz_t(), sizeof(buffer), 1, sizeof(buffer[0]), 0, 0, buffer);
 
       mpz_class m = rsaDecrypt(c, d, n);
 
       size_t countp;
-      char *plainText =
-          (char *)mpz_export(nullptr, &countp, 1, 1, 0, 0, m.get_mpz_t());
+      char* plainText =
+          (char*)mpz_export(nullptr, &countp, 1, 1, 0, 0, m.get_mpz_t());
 
       while (countp > 0 && plainText[countp - 1] == 0)
       {

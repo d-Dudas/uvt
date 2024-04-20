@@ -7,7 +7,7 @@
 
 #include <includes/rsa/RSA.hpp>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   IOConfig config;
   OptionParser parser(argc, argv, config);
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
   if (config.operation == Operations::generateKey)
   {
-    dynamic_cast<rsa::RSA *>(algorithm.get())->generateKeys(config);
+    dynamic_cast<rsa::RSA*>(algorithm.get())->generateKeys(config);
   }
   else if (config.operation == Operations::encrypt)
   {

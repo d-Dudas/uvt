@@ -10,20 +10,20 @@ AES::AES(Algorithms algorithm)
 {
   switch (algorithm)
   {
-  case Algorithms::AES_128:
-    numberOfRounds = 10;
-    keyCoefficient = 4;
-    break;
-  case Algorithms::AES_192:
-    numberOfRounds = 12;
-    keyCoefficient = 6;
-    break;
-  case Algorithms::AES_256:
-    numberOfRounds = 14;
-    keyCoefficient = 8;
-    break;
-  default:
-    break;
+    case Algorithms::AES_128:
+      numberOfRounds = 10;
+      keyCoefficient = 4;
+      break;
+    case Algorithms::AES_192:
+      numberOfRounds = 12;
+      keyCoefficient = 6;
+      break;
+    case Algorithms::AES_256:
+      numberOfRounds = 14;
+      keyCoefficient = 8;
+      break;
+    default:
+      break;
   }
 }
 
@@ -46,7 +46,7 @@ void AES::keyExpansionCore(std::bitset<8> word[4], int rconIterationCount)
   word[0] ^= rcon[rconIterationCount];
 }
 
-std::vector<std::bitset<8>> AES::keyExpansion(const std::string &key)
+std::vector<std::bitset<8>> AES::keyExpansion(const std::string& key)
 {
   std::vector<std::bitset<8>> expandedKey;
   for (int i = 0; i < 4 * keyCoefficient; i++)
@@ -88,23 +88,23 @@ std::vector<std::bitset<8>> AES::keyExpansion(const std::string &key)
   return expandedKey;
 }
 
-void AES::subBytes(std::vector<std::bitset<8>> &state)
+void AES::subBytes(std::vector<std::bitset<8>>& state)
 {
-  for (auto &byte : state)
+  for (auto& byte : state)
   {
     byte = s[byte.to_ulong()];
   }
 }
 
-void AES::invSubBytes(std::vector<std::bitset<8>> &state)
+void AES::invSubBytes(std::vector<std::bitset<8>>& state)
 {
-  for (auto &byte : state)
+  for (auto& byte : state)
   {
     byte = inv_s[byte.to_ulong()];
   }
 }
 
-void AES::shiftRows(std::vector<std::bitset<8>> &state)
+void AES::shiftRows(std::vector<std::bitset<8>>& state)
 {
   std::vector<std::bitset<8>> temp(16);
 
@@ -131,7 +131,7 @@ void AES::shiftRows(std::vector<std::bitset<8>> &state)
   state = temp;
 }
 
-void AES::invShiftRows(std::vector<std::bitset<8>> &state)
+void AES::invShiftRows(std::vector<std::bitset<8>>& state)
 {
   std::vector<std::bitset<8>> temp(16);
 
@@ -158,7 +158,7 @@ void AES::invShiftRows(std::vector<std::bitset<8>> &state)
   state = temp;
 }
 
-void AES::mixColumns(std::vector<std::bitset<8>> &state)
+void AES::mixColumns(std::vector<std::bitset<8>>& state)
 {
   std::vector<std::bitset<8>> temp(16);
 
@@ -166,23 +166,23 @@ void AES::mixColumns(std::vector<std::bitset<8>> &state)
   {
     int col = i * 4;
     temp[col] = std::bitset<8>(
-        mul2[state[col].to_ulong()] ^ mul3[state[col + 1].to_ulong()] ^
-        state[col + 2].to_ulong() ^ state[col + 3].to_ulong());
+        mul2[state[col].to_ulong()] ^ mul3[state[col + 1].to_ulong()]
+        ^ state[col + 2].to_ulong() ^ state[col + 3].to_ulong());
     temp[col + 1] = std::bitset<8>(
-        state[col].to_ulong() ^ mul2[state[col + 1].to_ulong()] ^
-        mul3[state[col + 2].to_ulong()] ^ state[col + 3].to_ulong());
+        state[col].to_ulong() ^ mul2[state[col + 1].to_ulong()]
+        ^ mul3[state[col + 2].to_ulong()] ^ state[col + 3].to_ulong());
     temp[col + 2] = std::bitset<8>(
-        state[col].to_ulong() ^ state[col + 1].to_ulong() ^
-        mul2[state[col + 2].to_ulong()] ^ mul3[state[col + 3].to_ulong()]);
+        state[col].to_ulong() ^ state[col + 1].to_ulong()
+        ^ mul2[state[col + 2].to_ulong()] ^ mul3[state[col + 3].to_ulong()]);
     temp[col + 3] = std::bitset<8>(
-        mul3[state[col].to_ulong()] ^ state[col + 1].to_ulong() ^
-        state[col + 2].to_ulong() ^ mul2[state[col + 3].to_ulong()]);
+        mul3[state[col].to_ulong()] ^ state[col + 1].to_ulong()
+        ^ state[col + 2].to_ulong() ^ mul2[state[col + 3].to_ulong()]);
   }
 
   state = temp; // Copy the transformed columns back into the original state
 }
 
-void AES::invMixColumns(std::vector<std::bitset<8>> &state)
+void AES::invMixColumns(std::vector<std::bitset<8>>& state)
 {
   std::vector<std::bitset<8>> temp(16);
 
@@ -190,24 +190,25 @@ void AES::invMixColumns(std::vector<std::bitset<8>> &state)
   {
     int col = i * 4;
     temp[col] = std::bitset<8>(
-        mul14[state[col].to_ulong()] ^ mul11[state[col + 1].to_ulong()] ^
-        mul13[state[col + 2].to_ulong()] ^ mul9[state[col + 3].to_ulong()]);
+        mul14[state[col].to_ulong()] ^ mul11[state[col + 1].to_ulong()]
+        ^ mul13[state[col + 2].to_ulong()] ^ mul9[state[col + 3].to_ulong()]);
     temp[col + 1] = std::bitset<8>(
-        mul9[state[col].to_ulong()] ^ mul14[state[col + 1].to_ulong()] ^
-        mul11[state[col + 2].to_ulong()] ^ mul13[state[col + 3].to_ulong()]);
+        mul9[state[col].to_ulong()] ^ mul14[state[col + 1].to_ulong()]
+        ^ mul11[state[col + 2].to_ulong()] ^ mul13[state[col + 3].to_ulong()]);
     temp[col + 2] = std::bitset<8>(
-        mul13[state[col].to_ulong()] ^ mul9[state[col + 1].to_ulong()] ^
-        mul14[state[col + 2].to_ulong()] ^ mul11[state[col + 3].to_ulong()]);
+        mul13[state[col].to_ulong()] ^ mul9[state[col + 1].to_ulong()]
+        ^ mul14[state[col + 2].to_ulong()] ^ mul11[state[col + 3].to_ulong()]);
     temp[col + 3] = std::bitset<8>(
-        mul11[state[col].to_ulong()] ^ mul13[state[col + 1].to_ulong()] ^
-        mul9[state[col + 2].to_ulong()] ^ mul14[state[col + 3].to_ulong()]);
+        mul11[state[col].to_ulong()] ^ mul13[state[col + 1].to_ulong()]
+        ^ mul9[state[col + 2].to_ulong()] ^ mul14[state[col + 3].to_ulong()]);
   }
 
   state = temp; // Copy the transformed columns back into the original state
 }
 
-void AES::addRoundKey(std::vector<std::bitset<8>> &state,
-                      const std::vector<std::bitset<8>> &roundKey)
+void AES::addRoundKey(
+    std::vector<std::bitset<8>>& state,
+    const std::vector<std::bitset<8>>& roundKey)
 {
   for (size_t i = 0; i < state.size(); i++)
   {
@@ -215,15 +216,17 @@ void AES::addRoundKey(std::vector<std::bitset<8>> &state,
   }
 }
 
-void AES::encryptBlock(std::vector<std::bitset<8>> &plaintext,
-                       const std::vector<std::bitset<8>> &expandedKeys)
+void AES::encryptBlock(
+    std::vector<std::bitset<8>>& plaintext,
+    const std::vector<std::bitset<8>>& expandedKeys)
 {
   std::vector<std::bitset<8>> state = plaintext;
 
   // Initial round key addition
-  addRoundKey(state,
-              std::vector<std::bitset<8>>(expandedKeys.begin(),
-                                          expandedKeys.begin() + blockSize));
+  addRoundKey(
+      state,
+      std::vector<std::bitset<8>>(
+          expandedKeys.begin(), expandedKeys.begin() + blockSize));
 
   // Main rounds
   for (int round = 1; round < numberOfRounds; ++round)
@@ -231,23 +234,27 @@ void AES::encryptBlock(std::vector<std::bitset<8>> &plaintext,
     subBytes(state);
     shiftRows(state);
     mixColumns(state);
-    addRoundKey(state, std::vector<std::bitset<8>>(
-                           expandedKeys.begin() + blockSize * round,
-                           expandedKeys.begin() + blockSize * (round + 1)));
+    addRoundKey(
+        state,
+        std::vector<std::bitset<8>>(
+            expandedKeys.begin() + blockSize * round,
+            expandedKeys.begin() + blockSize * (round + 1)));
   }
 
   subBytes(state);
   shiftRows(state);
-  addRoundKey(state,
-              std::vector<std::bitset<8>>(
-                  expandedKeys.begin() + blockSize * numberOfRounds,
-                  expandedKeys.begin() + blockSize * (numberOfRounds + 1)));
+  addRoundKey(
+      state,
+      std::vector<std::bitset<8>>(
+          expandedKeys.begin() + blockSize * numberOfRounds,
+          expandedKeys.begin() + blockSize * (numberOfRounds + 1)));
 
   plaintext = state;
 }
 
-std::vector<std::bitset<8>>
-AES::convertCharBufferToBitsetVector(const char *buffer, size_t length)
+std::vector<std::bitset<8>> AES::convertCharBufferToBitsetVector(
+    const char* buffer,
+    size_t length)
 {
   std::vector<std::bitset<8>> bitsetVector;
   bitsetVector.reserve(length);
@@ -260,7 +267,7 @@ AES::convertCharBufferToBitsetVector(const char *buffer, size_t length)
   return bitsetVector;
 }
 
-void AES::addPKCS7Padding(std::vector<std::bitset<8>> &block)
+void AES::addPKCS7Padding(std::vector<std::bitset<8>>& block)
 {
   size_t paddingSize = blockSize - (block.size() % blockSize);
   paddingSize = (paddingSize == 0) ? blockSize : paddingSize;
@@ -274,10 +281,11 @@ void AES::addPKCS7Padding(std::vector<std::bitset<8>> &block)
   }
 }
 
-void AES::encrypt(IOConfig &ioConfig)
+void AES::encrypt(IOConfig& ioConfig)
 {
-  for (int i = 0;
-       i < 4 * keyCoefficient && ioConfig.passphrase.size() < 4 * keyCoefficient; i++)
+  for (int i = 0; i < 4 * keyCoefficient
+                  && ioConfig.passphrase.size() < 4 * keyCoefficient;
+       i++)
   {
     ioConfig.passphrase += ioConfig.passphrase[i];
   }
@@ -287,7 +295,7 @@ void AES::encrypt(IOConfig &ioConfig)
   std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);
   std::ofstream outputFile(ioConfig.outputFile, std::ios::binary);
 
-  if (!inputFile.is_open() || !outputFile.is_open())
+  if (! inputFile.is_open() || ! outputFile.is_open())
   {
     std::cerr << "Error opening files\n";
     return;
@@ -321,39 +329,44 @@ void AES::encrypt(IOConfig &ioConfig)
   outputFile.close();
 }
 
-void AES::decryptBlock(std::vector<std::bitset<8>> &ciphertext,
-                       const std::vector<std::bitset<8>> &expandedKeys)
+void AES::decryptBlock(
+    std::vector<std::bitset<8>>& ciphertext,
+    const std::vector<std::bitset<8>>& expandedKeys)
 {
   std::vector<std::bitset<8>> state = ciphertext;
 
   // Initial round key addition
-  addRoundKey(state,
-              std::vector<std::bitset<8>>(
-                  expandedKeys.begin() + blockSize * numberOfRounds,
-                  expandedKeys.begin() + blockSize * (numberOfRounds + 1)));
+  addRoundKey(
+      state,
+      std::vector<std::bitset<8>>(
+          expandedKeys.begin() + blockSize * numberOfRounds,
+          expandedKeys.begin() + blockSize * (numberOfRounds + 1)));
 
   // Main rounds
   for (int round = numberOfRounds - 1; round > 0; --round)
   { // 9 rounds if AES-128
     invShiftRows(state);
     invSubBytes(state);
-    addRoundKey(state, std::vector<std::bitset<8>>(
-                           expandedKeys.begin() + blockSize * round,
-                           expandedKeys.begin() + blockSize * (round + 1)));
+    addRoundKey(
+        state,
+        std::vector<std::bitset<8>>(
+            expandedKeys.begin() + blockSize * round,
+            expandedKeys.begin() + blockSize * (round + 1)));
     invMixColumns(state);
   }
 
   // Final round (no MixColumns)
   invShiftRows(state);
   invSubBytes(state);
-  addRoundKey(state,
-              std::vector<std::bitset<8>>(expandedKeys.begin(),
-                                          expandedKeys.begin() + blockSize));
+  addRoundKey(
+      state,
+      std::vector<std::bitset<8>>(
+          expandedKeys.begin(), expandedKeys.begin() + blockSize));
 
   ciphertext = state; // Output the decrypted state
 }
 
-void AES::removePKCS7Padding(std::vector<std::bitset<8>> &data)
+void AES::removePKCS7Padding(std::vector<std::bitset<8>>& data)
 {
   if (data.empty())
   {
@@ -378,10 +391,11 @@ void AES::removePKCS7Padding(std::vector<std::bitset<8>> &data)
   data.resize(data.size() - paddingSize);
 }
 
-void AES::decrypt(IOConfig &ioConfig)
+void AES::decrypt(IOConfig& ioConfig)
 {
-  for (int i = 0;
-       i < 4 * keyCoefficient && ioConfig.passphrase.size() < 4 * keyCoefficient; i++)
+  for (int i = 0; i < 4 * keyCoefficient
+                  && ioConfig.passphrase.size() < 4 * keyCoefficient;
+       i++)
   {
     ioConfig.passphrase += ioConfig.passphrase[i];
   }
@@ -391,7 +405,7 @@ void AES::decrypt(IOConfig &ioConfig)
   std::ifstream inputFile(ioConfig.inputFile, std::ios::binary);
   std::ofstream outputFile(ioConfig.outputFile, std::ios::binary);
 
-  if (!inputFile.is_open() || !outputFile.is_open())
+  if (! inputFile.is_open() || ! outputFile.is_open())
   {
     std::cerr << "Error opening files\n";
     return;

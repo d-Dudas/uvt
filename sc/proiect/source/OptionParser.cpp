@@ -9,8 +9,10 @@
 #include <includes/des/DES.hpp>
 #include <includes/rsa/RSA.hpp>
 
-OptionParser::OptionParser(int argc, char **argv, IOConfig &ioConfig)
-    : argc(argc), argv(argv), ioConfig(ioConfig)
+OptionParser::OptionParser(int argc, char** argv, IOConfig& ioConfig)
+: argc(argc),
+  argv(argv),
+  ioConfig(ioConfig)
 {
 }
 
@@ -42,9 +44,9 @@ const bool OptionParser::isDES()
 
 const bool OptionParser::isAES()
 {
-  return ioConfig.algorithm == Algorithms::AES_128 or
-         ioConfig.algorithm == Algorithms::AES_192 or
-         ioConfig.algorithm == Algorithms::AES_256;
+  return ioConfig.algorithm == Algorithms::AES_128
+      or ioConfig.algorithm == Algorithms::AES_192
+      or ioConfig.algorithm == Algorithms::AES_256;
 }
 
 const bool OptionParser::isRSA()
@@ -79,8 +81,8 @@ const bool OptionParser::isIoConfigGoodForRSAKeyGeneration()
 
 const bool OptionParser::isIoConfigGoodForRSAOperations()
 {
-  return isRSA() and hasKeyFile() and not shouldGenerateKey() and
-         hasInputFile();
+  return isRSA() and hasKeyFile() and not shouldGenerateKey()
+     and hasInputFile();
 }
 
 const bool OptionParser::isIoConfigGoodForAESOrDESOperations()
@@ -89,80 +91,80 @@ const bool OptionParser::isIoConfigGoodForAESOrDESOperations()
 }
 
 int OptionParser::parseOptions(
-    std::unique_ptr<ICryptographicAlgorithm> &algorithm)
+    std::unique_ptr<ICryptographicAlgorithm>& algorithm)
 {
   int opt;
   while ((opt = getopt(argc, argv, "t:d:e:o:p:k:h")) != -1)
   {
     switch (opt)
     {
-    case 't':
-    {
-      const std::string type = optarg;
-      if (type == "des")
+      case 't':
       {
-        ioConfig.algorithm = Algorithms::DES;
+        const std::string type = optarg;
+        if (type == "des")
+        {
+          ioConfig.algorithm = Algorithms::DES;
+        }
+        else if (type == "aes_128")
+        {
+          ioConfig.algorithm = Algorithms::AES_128;
+        }
+        else if (type == "aes_192")
+        {
+          ioConfig.algorithm = Algorithms::AES_192;
+        }
+        else if (type == "aes_256")
+        {
+          ioConfig.algorithm = Algorithms::AES_256;
+        }
+        else if (type == "rsa")
+        {
+          ioConfig.algorithm = Algorithms::RSA;
+        }
+        else
+        {
+          printUsage();
+          return FAILURE;
+        }
+        break;
       }
-      else if (type == "aes_128")
+      case 'd':
       {
-        ioConfig.algorithm = Algorithms::AES_128;
+        ioConfig.inputFile = optarg;
+        ioConfig.operation = Operations::decrypt;
+        break;
       }
-      else if (type == "aes_192")
+      case 'e':
       {
-        ioConfig.algorithm = Algorithms::AES_192;
+        ioConfig.inputFile = optarg;
+        ioConfig.operation = Operations::encrypt;
+        break;
       }
-      else if (type == "aes_256")
+      case 'o':
       {
-        ioConfig.algorithm = Algorithms::AES_256;
+        ioConfig.outputFile = optarg;
+        break;
       }
-      else if (type == "rsa")
+      case 'p':
       {
-        ioConfig.algorithm = Algorithms::RSA;
+        ioConfig.passphrase = optarg;
+        break;
       }
-      else
+      case 'k':
+      {
+        ioConfig.keyFile = optarg;
+        break;
+      }
+      case 'h':
+      {
+        printUsage();
+        return SUCCESS;
+      }
+      default:
       {
         printUsage();
         return FAILURE;
       }
-      break;
-    }
-    case 'd':
-    {
-      ioConfig.inputFile = optarg;
-      ioConfig.operation = Operations::decrypt;
-      break;
-    }
-    case 'e':
-    {
-      ioConfig.inputFile = optarg;
-      ioConfig.operation = Operations::encrypt;
-      break;
-    }
-    case 'o':
-    {
-      ioConfig.outputFile = optarg;
-      break;
-    }
-    case 'p':
-    {
-      ioConfig.passphrase = optarg;
-      break;
-    }
-    case 'k':
-    {
-      ioConfig.keyFile = optarg;
-      break;
-    }
-    case 'h':
-    {
-      printUsage();
-      return SUCCESS;
-    }
-    default:
-    {
-      printUsage();
-      return FAILURE;
-    }
     }
   }
 

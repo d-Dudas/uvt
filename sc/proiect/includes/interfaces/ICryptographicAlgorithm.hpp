@@ -4,9 +4,9 @@
 
 class ICryptographicAlgorithm
 {
-public:
-    virtual void encrypt(IOConfig& ioConfig) = 0;
-    virtual void decrypt(IOConfig& ioConfig) = 0;
+  public:
+  virtual void encrypt(IOConfig& ioConfig) = 0;
+  virtual void decrypt(IOConfig& ioConfig) = 0;
 
-    virtual ~ICryptographicAlgorithm() = default;
+  virtual ~ICryptographicAlgorithm() = default;
 };
