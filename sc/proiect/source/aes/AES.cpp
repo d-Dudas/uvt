@@ -6,19 +6,19 @@
 
 namespace aes
 {
-AES::AES(aes::Versions version)
+AES::AES(Algorithms algorithm)
 {
-  switch (version)
+  switch (algorithm)
   {
-  case aes::Versions::AES_128:
+  case Algorithms::AES_128:
     numberOfRounds = 10;
     keyCoefficient = 4;
     break;
-  case aes::Versions::AES_192:
+  case Algorithms::AES_192:
     numberOfRounds = 12;
     keyCoefficient = 6;
     break;
-  case aes::Versions::AES_256:
+  case Algorithms::AES_256:
     numberOfRounds = 14;
     keyCoefficient = 8;
     break;

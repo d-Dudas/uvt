@@ -108,12 +108,21 @@ void RSA::generateKeys(IOConfig &ioConfig)
     throw std::runtime_error("Modular inverse of e cannot be computed.");
   }
 
-  savePrivateKey(ioConfig.keyFile, n, d);
-  savePublicKey(ioConfig.keyFile + ".pub", n);
+  const std::string privateKeyFile = ioConfig.keyFile;
+  const std::string publicKeyFile = ioConfig.keyFile + ".pub";
+
+  savePrivateKey(privateKeyFile, n, d);
+  savePublicKey(publicKeyFile, n);
 }
 
 void RSA::encrypt(IOConfig &ioConfig)
 {
+  mpz_class n, d;
+  loadPrivateKey(ioConfig.keyFile, n, d);
+
+  std::cout << "n bits:" << mpz_sizeinbase(n.get_mpz_t(), 2) << std::endl;
+  std::cout << "d bits:" << mpz_sizeinbase(d.get_mpz_t(), 2) << std::endl;
+
   std::cout << "Encrypting" << std::endl;
 }
 

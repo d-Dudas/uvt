@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <includes/IOConfig.hpp>
-#include <includes/aes/Versions.hpp>
 #include <includes/interfaces/ICryptographicAlgorithm.hpp>
 
 namespace aes
@@ -12,7 +11,7 @@ namespace aes
 class AES : public ICryptographicAlgorithm
 {
 public:
-  AES(aes::Versions version);
+  AES(Algorithms algorithm);
   void encrypt(IOConfig &ioConfig) override;
   void decrypt(IOConfig &ioConfig) override;
 

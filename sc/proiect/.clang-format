@@ -1,4 +1,7 @@
 BasedOnStyle: LLVM
 IndentWidth: 2
 BreakBeforeBraces: Allman
-
+AlignAfterOpenBracket: Align
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
